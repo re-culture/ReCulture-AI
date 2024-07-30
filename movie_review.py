@@ -96,7 +96,9 @@ def get_kinolights_reviews(movie_id):
             "user_name": user_name,
             "review_date": review_date,
             "rating": rating,
-            "review_title": review_title
+            "review_title": review_title,
+            "movie_id": movie_id,
+            "movie_name": movie_name
         })
 
     return reviews
@@ -104,13 +106,13 @@ def get_kinolights_reviews(movie_id):
 def save_reviews_to_csv(reviews, filename):
     df = pd.DataFrame(reviews)
     df.to_csv(filename, index=False, encoding='utf-8')
+    print("Saved reviews to csv file.")
 
 movie_id = 114858 # 키노라이츠 인사이드 아웃 2
 all_reviews = []
 for page in range(1, 2):  # 첫 5페이지의 리뷰를 가져옴
-    reviews = get_movie_reviews(movie_id)
-    #print(get_kinolights_reviews(movie_id))
-    print("kinolights reviews")
+    reviews = get_kinolights_reviews(movie_id)
+    print("Fetched movie reviews for", movie_id)
     all_reviews.extend(reviews)
 
 
