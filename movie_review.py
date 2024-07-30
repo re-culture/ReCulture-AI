@@ -108,9 +108,10 @@ def save_reviews_to_csv(reviews, filename):
     df.to_csv(filename, index=False, encoding='utf-8')
     print("Saved reviews to csv file.")
 
-movie_id = 114858 # 키노라이츠 인사이드 아웃 2
+#movie_id = 114858 # 키노라이츠 인사이드 아웃 2
+movie_ids = [114858, 130994, 113797, 125723]
 all_reviews = []
-for page in range(1, 2):  # 첫 5페이지의 리뷰를 가져옴
+for movie_id in movie_ids:  # 첫 5페이지의 리뷰를 가져옴
     reviews = get_kinolights_reviews(movie_id)
     print("Fetched movie reviews for", movie_id)
     all_reviews.extend(reviews)
