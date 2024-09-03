@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fd2e6408-4b94-4042-b071-1540d6d56163" name="변경" comment="fix typo">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/drama_130294.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/drama_130737.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/drama_79978.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/drama_80083.webp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/db.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +114,7 @@
       <workItem from="1723638867779" duration="1525000" />
       <workItem from="1723805205505" duration="8111000" />
       <workItem from="1724733786875" duration="15669000" />
-      <workItem from="1725198063599" duration="12318000" />
+      <workItem from="1725198063599" duration="15352000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
