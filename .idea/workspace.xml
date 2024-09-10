@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd2e6408-4b94-4042-b071-1540d6d56163" name="변경" comment="fix typo">
-      <change afterPath="$PROJECT_DIR$/drama_130294.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/drama_130737.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/drama_79978.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/drama_80083.webp" afterDir="false" />
+    <list default="true" id="fd2e6408-4b94-4042-b071-1540d6d56163" name="변경" comment="connect db">
+      <change afterPath="$PROJECT_DIR$/gnn_recommendation.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/db.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommend_model.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/recommend_model.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +111,7 @@
       <workItem from="1723638867779" duration="1525000" />
       <workItem from="1723805205505" duration="8111000" />
       <workItem from="1724733786875" duration="15669000" />
-      <workItem from="1725198063599" duration="15352000" />
+      <workItem from="1725198063599" duration="56416000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -252,7 +249,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725363458278</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="connect db">
+      <option name="closed" value="true" />
+      <created>1725371930486</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1725371930487</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -275,7 +280,8 @@
     <MESSAGE value="Get sports reviews" />
     <MESSAGE value="Recommend model for all reviews" />
     <MESSAGE value="fix typo" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix typo" />
+    <MESSAGE value="connect db" />
+    <option name="LAST_COMMIT_MESSAGE" value="connect db" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/reculture_py$movie_review.coverage" NAME="movie_review 커버리지 결과" MODIFIED="1722336522901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
