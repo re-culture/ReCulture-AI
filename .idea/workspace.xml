@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fd2e6408-4b94-4042-b071-1540d6d56163" name="변경" comment="add drama user">
+    <list default="true" id="fd2e6408-4b94-4042-b071-1540d6d56163" name="변경" comment="add movie user">
+      <change afterPath="$PROJECT_DIR$/movie_113797.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/movie_114858.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/movie_125723.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/movie_130994.webp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/db.ipynb" afterDir="false" />
     </list>
@@ -114,7 +118,7 @@
       <workItem from="1723805205505" duration="8111000" />
       <workItem from="1724733786875" duration="15669000" />
       <workItem from="1725198063599" duration="75481000" />
-      <workItem from="1726246255673" duration="32387000" />
+      <workItem from="1726246255673" duration="39346000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -276,7 +280,23 @@
       <option name="project" value="LOCAL" />
       <updated>1726312296776</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="add drama post">
+      <option name="closed" value="true" />
+      <created>1726417689276</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1726417689276</updated>
+    </task>
+    <task id="LOCAL-00022" summary="add movie user">
+      <option name="closed" value="true" />
+      <created>1726532216924</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1726532216924</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -302,7 +322,9 @@
     <MESSAGE value="connect db" />
     <MESSAGE value="gnn recommendation system for csv file" />
     <MESSAGE value="add drama user" />
-    <option name="LAST_COMMIT_MESSAGE" value="add drama user" />
+    <MESSAGE value="add drama post" />
+    <MESSAGE value="add movie user" />
+    <option name="LAST_COMMIT_MESSAGE" value="add movie user" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/reculture_py$movie_review.coverage" NAME="movie_review 커버리지 결과" MODIFIED="1722336522901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
