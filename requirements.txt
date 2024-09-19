@@ -1,0 +1,9 @@
+Flask
+python-dotenv
+SQLAlchemy
+psycopg2-binary
+pandas
+scikit-learn
+torch
+torch-geometric
+numpy
