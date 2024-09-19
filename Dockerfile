@@ -9,7 +9,6 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # 앱 코드 복사
-COPY .env .
 COPY models.py .
 COPY server.py .
 
