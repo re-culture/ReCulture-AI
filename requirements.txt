@@ -7,3 +7,4 @@ scikit-learn
 torch
 torch-geometric
 numpy
+redis
