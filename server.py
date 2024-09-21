@@ -1,3 +1,4 @@
+import redis
 from flask import Flask, jsonify, request
 import os
 from dotenv import load_dotenv
@@ -22,6 +23,8 @@ db_host = os.getenv("DATABASE_HOST")
 db_name = os.getenv("DATABASE_NAME")
 db_user = os.getenv("DATABASE_USER")
 db_password = os.getenv("DATABASE_PASSWORD")
+redis_host = os.getenv("REDIS_HOST")
+redis_port = os.getenv("REDIS_PORT")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,6 +33,11 @@ app = Flask(__name__)
 engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}/{db_name}')
 Session = sessionmaker(bind=engine)
 session = Session()
+
+# Connect redis
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+redis_client.set('test_key', 'test_value')
+print(redis_client.get('test_key'))
 
 
 # Fetch data from the CulturePost table with all necessary columns
