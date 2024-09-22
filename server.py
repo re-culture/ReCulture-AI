@@ -217,6 +217,15 @@ def get_recommend():
     return jsonify(recommendations.to_dict(orient='records'))
 
 
+@app.route("/update-cache", methods=["POST"])
+def update_cache():
+    user_id = request.args.get('user_id')
+    data_from_db = fetch_data_from_db()
+    redis_client.set('culture_posts', str(data_from_db))
+    user_data_from_db = fetch_user_data_from_db(user_id)
+    redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+    return jsonify({"status": "cache updated"}), 200
+
 # Run Flask app
 if __name__ == "__main__":
-    app.run(debug=True, port=5050, host='0.0.0.0')
+    app.run(port=5050, host='0.0.0.0')
