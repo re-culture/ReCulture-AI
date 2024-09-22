@@ -43,6 +43,7 @@ print(redis_client.get('test_key'))
 def fetch_data_from_db():
     cached_data = redis_client.get('culture_posts')
     if cached_data:
+        print("loaded data")
         return eval(cached_data)
 
     query = session.query(CulturePost).all()
@@ -53,6 +54,7 @@ def fetch_data_from_db():
         'categoryId': row.categoryId,
         'authorId': row.authorId,
         'review': row.review,
+        'disclosure': row.disclosure,
         'detail1': row.detail1,
         'detail2': row.detail2,
         'detail3': row.detail3,
@@ -66,6 +68,7 @@ def fetch_data_from_db():
 def fetch_user_data_from_db(user_id):
     cached_data = redis_client.get(f'user{user_id}_posts')
     if cached_data:
+        print("loaded cached data")
         return eval(cached_data)
 
     query = session.query(CulturePost).filter_by(authorId=user_id).all()
@@ -76,6 +79,7 @@ def fetch_user_data_from_db(user_id):
         'categoryId': row.categoryId,
         'authorId': row.authorId,
         'review': row.review,
+        'disclosure': row.disclosure,
         'detail1': row.detail1,
         'detail2': row.detail2,
         'detail3': row.detail3,
@@ -220,11 +224,14 @@ def get_recommend():
 @app.route("/update-cache", methods=["POST"])
 def update_cache():
     user_id = request.args.get('user_id')
+    redis_client.delete('culture_posts')
+    redis_client.delete(f'user{user_id}_posts')
     data_from_db = fetch_data_from_db()
     redis_client.set('culture_posts', str(data_from_db))
     user_data_from_db = fetch_user_data_from_db(user_id)
     redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
     return jsonify({"status": "cache updated"}), 200
+
 
 # Run Flask app
 if __name__ == "__main__":
