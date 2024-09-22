@@ -1,3 +1,4 @@
+import redis
 from flask import Flask, jsonify, request
 import os
 from dotenv import load_dotenv
@@ -22,6 +23,8 @@ db_host = os.getenv("DATABASE_HOST")
 db_name = os.getenv("DATABASE_NAME")
 db_user = os.getenv("DATABASE_USER")
 db_password = os.getenv("DATABASE_PASSWORD")
+redis_host = os.getenv("REDIS_HOST")
+redis_port = os.getenv("REDIS_PORT")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -31,48 +34,54 @@ engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}
 Session = sessionmaker(bind=engine)
 session = Session()
 
+# Connect redis
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+redis_client.set('test_key', 'test_value')
+print(redis_client.get('test_key'))
 
 # Fetch data from the CulturePost table with all necessary columns
 def fetch_data_from_db():
+    cached_data = redis_client.get('culture_posts')
+    if cached_data:
+        return eval(cached_data)
+
     query = session.query(CulturePost).all()
     data = [{
         'id': row.id,
         'title': row.title,
         'emoji': row.emoji,
-        'date': row.date,
         'categoryId': row.categoryId,
         'authorId': row.authorId,
         'review': row.review,
-        'disclosure': row.disclosure,
         'detail1': row.detail1,
         'detail2': row.detail2,
         'detail3': row.detail3,
         'detail4': row.detail4,
-        'createdAt': row.createdAt,
-        'updatedAt': row.updatedAt
     } for row in query]
+    redis_client.set('culture_posts', str(data))
     return data
 
 
 # Fetch all records written by the current user with all necessary columns
 def fetch_user_data_from_db(user_id):
+    cached_data = redis_client.get(f'user{user_id}_posts')
+    if cached_data:
+        return eval(cached_data)
+
     query = session.query(CulturePost).filter_by(authorId=user_id).all()
     user_data = [{
         'id': row.id,
         'title': row.title,
         'emoji': row.emoji,
-        'date': row.date,
         'categoryId': row.categoryId,
         'authorId': row.authorId,
         'review': row.review,
-        'disclosure': row.disclosure,
         'detail1': row.detail1,
         'detail2': row.detail2,
         'detail3': row.detail3,
         'detail4': row.detail4,
-        'createdAt': row.createdAt,
-        'updatedAt': row.updatedAt
     } for row in query]
+    redis_client.set(f'user{user_id}_posts', str(user_data))
     return user_data
 
 
@@ -187,7 +196,6 @@ def get_recommend():
     trained_model = train_gnn(data)
 
     user_id = request.args.get('user_id')
-    print (user_id)
 
     # 유저 프로필 벡터 생성
     user_vector = create_user_profile_vector(user_id)
@@ -209,6 +217,15 @@ def get_recommend():
     return jsonify(recommendations.to_dict(orient='records'))
 
 
+@app.route("/update-cache", methods=["POST"])
+def update_cache():
+    user_id = request.args.get('user_id')
+    data_from_db = fetch_data_from_db()
+    redis_client.set('culture_posts', str(data_from_db))
+    user_data_from_db = fetch_user_data_from_db(user_id)
+    redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+    return jsonify({"status": "cache updated"}), 200
+
 # Run Flask app
 if __name__ == "__main__":
-    app.run(debug=True, port=5050, host='0.0.0.0')
+    app.run(port=5050, host='0.0.0.0')
