@@ -123,7 +123,7 @@ def get_rec():
 def get_recommend():
     data_from_db = fetch_data_from_db()
     df = pd.DataFrame(data_from_db)
-    category_name = ["", "영화", "뮤지컬", "연극", "스포츠", "공연", "드라마", "책", "전시"]
+    category_name = ["", "영화", "뮤지컬", "연극", "스포츠", "공연", "드라마", "책", "전시", "기타"]
     df['category_name'] = df['categoryId'].apply(lambda x: category_name[x])
     df['all_text'] = df['category_name'] + ' ' + df['title'] + ' ' + df['review']
 
