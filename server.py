@@ -14,7 +14,6 @@ from torch_geometric.nn import GCNConv
 import torch.nn.functional as F
 import numpy as np
 
-
 # Load environment variables
 load_dotenv()
 
@@ -38,6 +37,8 @@ session = Session()
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 redis_client.set('test_key', 'test_value')
 print(redis_client.get('test_key'))
+trained_model_key = "trained_gnn_model"
+
 
 # Fetch data from the CulturePost table with all necessary columns
 def fetch_data_from_db():
@@ -107,6 +108,35 @@ class GCN(torch.nn.Module):
         return x
 
 
+def train_gnn(data):
+    # 이미 학습된 모델이 캐시에 있으면 불러오기
+    # cached_model = redis_client.get(trained_model_key)
+    # if cached_model:
+    #     print("Using cached GNN model")
+    #     return torch.load(cached_model)
+
+    model = GCN()  # GCN 모델 생성
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # 옵티마이저 설정
+
+    # 모델 학습 함수 정의
+    def train():
+        model.train()
+        optimizer.zero_grad()
+        out = model(data)  # GCN을 통해 노드 임베딩 계산
+        loss = F.mse_loss(out, data.x)  # 노드 특징 복원을 위한 MSE Loss
+        loss.backward()
+        optimizer.step()
+
+    # 학습 반복
+    for epoch in range(100):  # 100회 반복 학습
+        train()
+
+    # torch.save(model, 'model.pth')
+    # redis_client.set(trained_model_key, 'model.pth')
+
+    return model  # 학습 완료된 모델 반환
+
+
 # API endpoint to get records
 @app.route("/", methods=["GET"])
 def handle_test():
@@ -149,25 +179,6 @@ def get_recommend():
         combined_edge_index = torch.cat([data.edge_index, user_edge_index], dim=1)
 
         return Data(x=combined_x, edge_index=combined_edge_index)
-
-    def train_gnn(data):
-        model = GCN()  # GCN 모델 생성
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # 옵티마이저 설정
-
-        # 모델 학습 함수 정의
-        def train():
-            model.train()
-            optimizer.zero_grad()
-            out = model(data)  # GCN을 통해 노드 임베딩 계산
-            loss = F.mse_loss(out, data.x)  # 노드 특징 복원을 위한 MSE Loss
-            loss.backward()
-            optimizer.step()
-
-        # 학습 반복
-        for epoch in range(100):  # 100회 반복 학습
-            train()
-
-        return model  # 학습 완료된 모델 반환
 
     def create_user_profile_vector(user_id):
         # 유저가 작성한 모든 기록을 가져옴
