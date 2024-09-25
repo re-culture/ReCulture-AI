@@ -1,6 +1,7 @@
 import redis
 from flask import Flask, jsonify, request
 import os
+import io
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -110,10 +111,11 @@ class GCN(torch.nn.Module):
 
 def train_gnn(data):
     # 이미 학습된 모델이 캐시에 있으면 불러오기
-    # cached_model = redis_client.get(trained_model_key)
-    # if cached_model:
-    #     print("Using cached GNN model")
-    #     return torch.load(cached_model)
+    cached_model = redis_client.get(trained_model_key)
+    if cached_model:
+        print("Using cached GNN model")
+        print(cached_model)
+        return torch.load('model.pth')
 
     model = GCN()  # GCN 모델 생성
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # 옵티마이저 설정
@@ -131,8 +133,8 @@ def train_gnn(data):
     for epoch in range(100):  # 100회 반복 학습
         train()
 
-    # torch.save(model, 'model.pth')
-    # redis_client.set(trained_model_key, 'model.pth')
+    torch.save(model, 'model.pth')
+    redis_client.set(trained_model_key, 'model.pth')
 
     return model  # 학습 완료된 모델 반환
 
@@ -241,9 +243,10 @@ def update_cache():
     redis_client.set('culture_posts', str(data_from_db))
     user_data_from_db = fetch_user_data_from_db(user_id)
     redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+    redis_client.delete(trained_model_key)
     return jsonify({"status": "cache updated"}), 200
 
 
 # Run Flask app
 if __name__ == "__main__":
-    app.run(port=5050, host='0.0.0.0')
+    app.run(port=5050, host='0.0.0.0', debug=True)
