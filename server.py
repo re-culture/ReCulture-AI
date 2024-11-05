@@ -4,7 +4,7 @@ import os
 import io
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from models import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -73,7 +73,10 @@ def fetch_user_data_from_db(user_id):
         print("loaded cached data")
         return eval(cached_data)
 
-    query = session.query(CulturePost).filter_by(authorId=user_id).all()
+    bookmarks = session.query(Bookmark).filter_by(userId=user_id).all()
+    post_ids = [row.postId for row in bookmarks]
+
+    query = session.query(CulturePost).filter(or_(CulturePost.id.in_(post_ids), CulturePost.authorId == user_id)).all()
     user_data = [{
         'id': row.id,
         'title': row.title,
