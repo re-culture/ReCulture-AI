@@ -1,7 +1,6 @@
 import redis
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 import os
-import io
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, or_
@@ -32,13 +31,29 @@ app = Flask(__name__)
 # Create database engine and session
 engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}/{db_name}')
 Session = sessionmaker(bind=engine)
-session = Session()
 
 # Connect redis
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 redis_client.set('test_key', 'test_value')
 print(redis_client.get('test_key'))
 trained_model_key = "trained_gnn_model"
+
+
+# 세션 생성 함수
+def get_session():
+    if "db_session" not in g:
+        g.db_session = Session()
+    return g.db_session
+
+
+# 요청 후 세션 종료
+@app.teardown_appcontext
+def remove_session(exception=None):
+    db_session = g.pop("db_session", None)
+    if db_session is not None:
+        if exception:
+            db_session.rollback()
+        db_session.close()
 
 
 # Fetch data from the CulturePost table with all necessary columns
@@ -48,6 +63,7 @@ def fetch_data_from_db():
         print("loaded data")
         return eval(cached_data)
 
+    session = get_session()
     query = session.query(CulturePost).all()
     data = [{
         'id': row.id,
@@ -73,10 +89,13 @@ def fetch_user_data_from_db(user_id):
         print("loaded cached data")
         return eval(cached_data)
 
+    session = get_session()
+
     bookmarks = session.query(Bookmark).filter_by(userId=user_id).all()
     post_ids = [row.postId for row in bookmarks]
 
     query = session.query(CulturePost).filter(or_(CulturePost.id.in_(post_ids), CulturePost.authorId == user_id)).all()
+
     user_data = [{
         'id': row.id,
         'title': row.title,
@@ -256,11 +275,50 @@ def update_cache():
     user_id = request.args.get('user_id')
     redis_client.delete('culture_posts')
     redis_client.delete(f'user{user_id}_posts')
+
     data_from_db = fetch_data_from_db()
     redis_client.set('culture_posts', str(data_from_db))
     user_data_from_db = fetch_user_data_from_db(user_id)
     redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+
+    # 모델을 캐시에 저장하기 위한 데이터 준비
+    df = pd.DataFrame(data_from_db)
+    category_name = ["", "영화", "뮤지컬", "연극", "스포츠", "공연", "드라마", "책", "전시", "기타"]
+    df['category_name'] = df['categoryId'].apply(lambda x: category_name[x])
+    df['all_text'] = [
+        f"{row['category_name'] or ''} {row['title'] or ''} {row['review'] or ''} {row['detail1'] or ''} {row['detail2'] or ''} {row['detail3'] or ''} {row['detail4'] or ''}"
+        for idx, row in df.iterrows()
+    ]
+
+    # TF-IDF 및 코사인 유사도 계산
+    tfidf_vectorizer = TfidfVectorizer(max_features=500)
+    tfidf_matrix = tfidf_vectorizer.fit_transform(df['all_text'])
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+    # GNN을 위한 그래프 데이터 생성
+    edge_index = torch.tensor([
+        [i, j] for i in range(len(cosine_sim)) for j in range(len(cosine_sim)) if cosine_sim[i, j] > 0.5
+    ], dtype=torch.long).t().contiguous()
+    x = torch.tensor(tfidf_matrix.toarray(), dtype=torch.float)
+    data = Data(x=x, edge_index=edge_index)
+
     redis_client.delete(trained_model_key)
+    # 모델 훈련
+    trained_model = train_gnn(data)
+    torch.save(trained_model, 'model.pth')
+    redis_client.set(trained_model_key, 'model.pth')
+
+    return jsonify({"status": "cache updated"}), 200
+
+
+@app.route("/update-bookmark", methods=["POST"])
+def update_bookmark_cache():
+    user_id = request.args.get('user_id')
+    redis_client.delete(f'user{user_id}_posts')
+
+    user_data_from_db = fetch_user_data_from_db(user_id)
+    redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+
     return jsonify({"status": "cache updated"}), 200
 
 
