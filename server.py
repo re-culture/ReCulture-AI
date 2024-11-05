@@ -4,7 +4,7 @@ import os
 import io
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from models import *
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -73,7 +73,10 @@ def fetch_user_data_from_db(user_id):
         print("loaded cached data")
         return eval(cached_data)
 
-    query = session.query(CulturePost).filter_by(authorId=user_id).all()
+    bookmarks = session.query(Bookmark).filter_by(userId=user_id).all()
+    post_ids = [row.postId for row in bookmarks]
+
+    query = session.query(CulturePost).filter(or_(CulturePost.id.in_(post_ids), CulturePost.authorId == user_id)).all()
     user_data = [{
         'id': row.id,
         'title': row.title,
@@ -157,8 +160,11 @@ def get_recommend():
     df = pd.DataFrame(data_from_db)
     category_name = ["", "영화", "뮤지컬", "연극", "스포츠", "공연", "드라마", "책", "전시", "기타"]
     df['category_name'] = df['categoryId'].apply(lambda x: category_name[x])
-    df['all_text'] = df['category_name'] + ' ' + df['title'] + ' ' + df['review']
-
+   # df['all_text'] = df['category_name'] + ' ' + df['title'] + ' ' + df['review'] + ' ' + df['detail1'] + ' ' + df['detail2']
+    df['all_text'] = [
+        f"{row['category_name'] or ''} {row['title'] or ''} {row['review'] or ''} {row['detail1'] or ''} {row['detail2'] or ''} {row['detail3'] or ''} {row['detail4'] or ''}"
+        for idx, row in df.iterrows()
+    ]
     # TF-IDF 벡터화
     tfidf_vectorizer = TfidfVectorizer(max_features=500)
     tfidf_matrix = tfidf_vectorizer.fit_transform(df['all_text'])
@@ -188,10 +194,21 @@ def get_recommend():
 
         # 카테고리, 제목, 내용을 결합하여 하나의 텍스트로 만듦
         combined_text = ' '.join(
-            [category_name[post['categoryId']] + ' ' + post['title'] + ' ' + post['review'] for post in user_posts])
+            [
+                (category_name[post['categoryId']] or '') + ' ' +
+                (post['title'] or '') + ' ' +
+                (post['review'] or '') + ' ' +
+                (post['detail1'] or '') + ' ' +
+                (post['detail2'] or '') + ' ' +
+                (post['detail3'] or '') + ' ' +
+                (post['detail4'] or '')
+                for post in user_posts
+            ]
+        )
         print(combined_text)
 
-        # 결합된 텍스트를 TF-IDF 벡터화
+
+# 결합된 텍스트를 TF-IDF 벡터화
         user_vector = tfidf_vectorizer.transform([combined_text])
 
         return torch.tensor(user_vector.toarray(), dtype=torch.float)

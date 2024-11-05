@@ -59,3 +59,13 @@ class Photo(Base):
 
     def __repr__(self) -> str:
         return f"<Photo {self.url} {self.culturePostId}>"
+
+
+class Bookmark(Base):
+    __tablename__ = "Bookmark"
+    id = Column(Integer, primary_key=True)
+    userId = Column(Integer, ForeignKey("User.id"), nullable=False)
+    postId = Column(Integer, ForeignKey("CulturePost.id"), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<Bookmark {self.id} {self.userId} {self.postId}>"
