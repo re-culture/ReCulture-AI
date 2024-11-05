@@ -311,6 +311,17 @@ def update_cache():
     return jsonify({"status": "cache updated"}), 200
 
 
+@app.route("/update-bookmark", methods=["POST"])
+def update_bookmark_cache():
+    user_id = request.args.get('user_id')
+    redis_client.delete(f'user{user_id}_posts')
+
+    user_data_from_db = fetch_user_data_from_db(user_id)
+    redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
+
+    return jsonify({"status": "cache updated"}), 200
+
+
 # Run Flask app
 if __name__ == "__main__":
     app.run(port=5050, host='0.0.0.0', debug=True)
