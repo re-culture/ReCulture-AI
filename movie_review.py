@@ -10,6 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 
+
 def get_movie_reviews(movie_id):
     url = f"https://m.kinolights.com/title/{movie_id}?tab=review"
     headers = {
@@ -20,7 +21,7 @@ def get_movie_reviews(movie_id):
 
     movie_name = soup.find("h1", {"class": "movie-title"}).text.strip()
     print(movie_name)
-    print (soup.find("h1", class_= "movie-title").text.strip())
+    print(soup.find("h1", class_="movie-title").text.strip())
     reviews = []
     review_items = soup.find_all("article", class_="review-item")
     for item in review_items:
@@ -39,6 +40,7 @@ def get_movie_reviews(movie_id):
         })
     return reviews
 
+
 def get_kinolights_reviews(movie_id):
     url = f"https://m.kinolights.com/title/{movie_id}?tab=review"
 
@@ -51,7 +53,7 @@ def get_kinolights_reviews(movie_id):
     driver.get(url)
 
     SCROLL_PAUSE_TIME = 2
-    MAX_SCROLL_TIME = 30
+    MAX_SCROLL_TIME = 10
     start_time = time.time()
 
     # 스크롤을 끝까지 내림
@@ -91,7 +93,6 @@ def get_kinolights_reviews(movie_id):
         except AttributeError:
             review_title = "No title"
 
-
         reviews.append({
             "user_name": user_name,
             "review_date": review_date,
@@ -103,22 +104,24 @@ def get_kinolights_reviews(movie_id):
 
     return reviews
 
+
 def save_reviews_to_csv(reviews, filename):
     df = pd.DataFrame(reviews)
     df.to_csv(filename, index=False, encoding='utf-8')
     print("Saved reviews to csv file.")
 
+
 #movie_id = 114858 # 키노라이츠 인사이드 아웃 2
-movie_ids = [114858, 130994, 113797, 125723]
+# movie_ids = [114858, 130994, 113797, 125723]
+movie_ids = [117272, 41164, 7220, 63307]
 all_reviews = []
 for movie_id in movie_ids:  # 첫 5페이지의 리뷰를 가져옴
     reviews = get_kinolights_reviews(movie_id)
     print("Fetched movie reviews for", movie_id)
     all_reviews.extend(reviews)
 
-
 # 파일 저장
-csv_filename = "movie_reviews.csv"
+csv_filename = "movie_reviews_new.csv"
 save_reviews_to_csv(all_reviews, csv_filename)
 
 # 결과 출력
