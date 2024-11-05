@@ -1,5 +1,5 @@
 import redis
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
@@ -31,13 +31,29 @@ app = Flask(__name__)
 # Create database engine and session
 engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}/{db_name}')
 Session = sessionmaker(bind=engine)
-session = Session()
 
 # Connect redis
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
 redis_client.set('test_key', 'test_value')
 print(redis_client.get('test_key'))
 trained_model_key = "trained_gnn_model"
+
+
+# 세션 생성 함수
+def get_session():
+    if "db_session" not in g:
+        g.db_session = Session()
+    return g.db_session
+
+
+# 요청 후 세션 종료
+@app.teardown_appcontext
+def remove_session(exception=None):
+    db_session = g.pop("db_session", None)
+    if db_session is not None:
+        if exception:
+            db_session.rollback()
+        db_session.close()
 
 
 # Fetch data from the CulturePost table with all necessary columns
@@ -47,6 +63,7 @@ def fetch_data_from_db():
         print("loaded data")
         return eval(cached_data)
 
+    session = get_session()
     query = session.query(CulturePost).all()
     data = [{
         'id': row.id,
@@ -72,10 +89,13 @@ def fetch_user_data_from_db(user_id):
         print("loaded cached data")
         return eval(cached_data)
 
+    session = get_session()
+
     bookmarks = session.query(Bookmark).filter_by(userId=user_id).all()
     post_ids = [row.postId for row in bookmarks]
 
     query = session.query(CulturePost).filter(or_(CulturePost.id.in_(post_ids), CulturePost.authorId == user_id)).all()
+
     user_data = [{
         'id': row.id,
         'title': row.title,
@@ -282,6 +302,7 @@ def update_cache():
     x = torch.tensor(tfidf_matrix.toarray(), dtype=torch.float)
     data = Data(x=x, edge_index=edge_index)
 
+    redis_client.delete(trained_model_key)
     # 모델 훈련
     trained_model = train_gnn(data)
     torch.save(trained_model, 'model.pth')
