@@ -1,7 +1,6 @@
 import redis
 from flask import Flask, jsonify, request
 import os
-import io
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, or_
@@ -256,11 +255,38 @@ def update_cache():
     user_id = request.args.get('user_id')
     redis_client.delete('culture_posts')
     redis_client.delete(f'user{user_id}_posts')
+
     data_from_db = fetch_data_from_db()
     redis_client.set('culture_posts', str(data_from_db))
     user_data_from_db = fetch_user_data_from_db(user_id)
     redis_client.set(f'user{user_id}_posts', str(user_data_from_db))
-    redis_client.delete(trained_model_key)
+
+    # 모델을 캐시에 저장하기 위한 데이터 준비
+    df = pd.DataFrame(data_from_db)
+    category_name = ["", "영화", "뮤지컬", "연극", "스포츠", "공연", "드라마", "책", "전시", "기타"]
+    df['category_name'] = df['categoryId'].apply(lambda x: category_name[x])
+    df['all_text'] = [
+        f"{row['category_name'] or ''} {row['title'] or ''} {row['review'] or ''} {row['detail1'] or ''} {row['detail2'] or ''} {row['detail3'] or ''} {row['detail4'] or ''}"
+        for idx, row in df.iterrows()
+    ]
+
+    # TF-IDF 및 코사인 유사도 계산
+    tfidf_vectorizer = TfidfVectorizer(max_features=500)
+    tfidf_matrix = tfidf_vectorizer.fit_transform(df['all_text'])
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+    # GNN을 위한 그래프 데이터 생성
+    edge_index = torch.tensor([
+        [i, j] for i in range(len(cosine_sim)) for j in range(len(cosine_sim)) if cosine_sim[i, j] > 0.5
+    ], dtype=torch.long).t().contiguous()
+    x = torch.tensor(tfidf_matrix.toarray(), dtype=torch.float)
+    data = Data(x=x, edge_index=edge_index)
+
+    # 모델 훈련
+    trained_model = train_gnn(data)
+    torch.save(trained_model, 'model.pth')
+    redis_client.set(trained_model_key, 'model.pth')
+
     return jsonify({"status": "cache updated"}), 200
 
 
