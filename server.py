@@ -115,11 +115,11 @@ def fetch_user_data_from_db(user_id):
 
 # GCN 모델 정의
 class GCN(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, in_channels: int, hidden_dim: int = 16):
         super(GCN, self).__init__()
-        self.conv1 = GCNConv(500, 16)  # TF-IDF의 max_features = 500
-        self.conv2 = GCNConv(16, 16)
-        self.conv3 = GCNConv(16, 500)  # 차원 다시 확장
+        self.conv1 = GCNConv(in_channels, hidden_dim)  # TF-IDF의 max_features = 500
+        self.conv2 = GCNConv(hidden_dim, hidden_dim)
+        self.conv3 = GCNConv(hidden_dim, in_channels)  # 차원 다시 확장
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
@@ -139,7 +139,8 @@ def train_gnn(data):
         print(cached_model)
         return torch.load('model.pth')
 
-    model = GCN()  # GCN 모델 생성
+    in_channels = data.x.size(1)
+    model = GCN(in_channels=in_channels)  # GCN 모델 생성
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # 옵티마이저 설정
 
     # 모델 학습 함수 정의
